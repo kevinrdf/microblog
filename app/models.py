@@ -18,3 +18,13 @@ class Review(db.Model):
     
     def __repr__(self):
         return '<Review {} {}>'.format(self.rating, self.description)
+
+
+class Estudiante(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    codigo = db.Column(db.String(8), index=True, unique=True)
+    nombre = db.Column(db.String(20), index=True, unique=True)
+    apellido = db.Column(db.String(20))
+
+    def __repr__(self):
+        return '<Estudiante {} {}>'.format(self.nombre, self.apellido)
