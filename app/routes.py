@@ -1,8 +1,9 @@
+from operator import truediv
 from app import app
 from datetime import datetime
 import re
 from flask import render_template, request
-from app.models import User, Review, Estudiante
+from app.models import User, Review, Estudiante, Usuario
 from app import db
 import requests
 import json
@@ -11,7 +12,7 @@ import json
 @app.route('/index')
 def index():
     user = {'username': 'usuario'}
-    return render_template('index.html', title='Home', user=user)
+    return render_template('index.html', title='Home', user=user, elemento1="codigo", elemento2="HTML")
 @app.route('/indexdinamico', methods=['GET'])
 def indexDinamico():
     args = request.args
@@ -102,8 +103,7 @@ def getReviews():
         reviewString += "Rating: " + str(review.rating) + "/5. Description: " + review.description + "<br>"
     return reviewString
 @app.route("/reviews/<id>/")
-def getReview(id,pid):
-    print(pid)
+def getReview(id):
     review = Review.query.filter(Review.id == id).first()
     print(review)
     if review == None:
@@ -155,3 +155,81 @@ def createEstudiante():
 
 def verifyPassword(password):
     return len(password) >= 10
+
+
+@app.route("/users/create", methods=["GET"])
+def createUser():
+    args = request.args
+    username = args.get("username")
+    email = args.get("email")
+    password = args.get("password")
+
+    if username == None or email == None or password == None:
+        return "Missing parameters: username, email or password"
+    passwordLength = len(password)
+    hasDigit = False
+    hasLetter = False
+    for letter in password:
+        if letter.isdigit():
+            hasDigit = True
+            break
+    for letter in password:
+        if letter.isalpha():
+            hasLetter = True
+            break
+    if passwordLength < 8 or (not hasDigit) or (not hasLetter):
+        return "Invalid password, must have at least 8 characters, a digit and a letter"
+    newUser = Usuario(username=username, email=email, password=password)
+    db.session.add(newUser)
+    try:
+        db.session.commit()
+    except Exception as err:
+        return "Invalid user"
+    return "User added"
+
+@app.route('/users/update/<username>', methods=['GET'])
+def updateUser(username):
+    oldUser = Usuario.query.filter(Usuario.username == username).first()
+
+    if oldUser == None:
+        return "User not found"
+    
+    args = request.args
+    newUsername = args.get("username")
+    newEmail = args.get("email")
+    newPassword = args.get("password")
+
+    if newUsername == None:
+        newUsername = oldUser.username
+    if newEmail == None:
+        newEmail = oldUser.email
+    if newPassword == None:
+        newPassword = oldUser.password
+    else:
+        #verificar contrasena
+        #verificarContrasena(password)
+        pass
+    
+    oldUser.username = newUsername
+    oldUser.email = newEmail
+    oldUser.password = newPassword
+
+    try:
+        db.session.commit()
+    except Exception as err:
+        return "Update paramaters are invalid"
+    return "User updated"
+
+@app.route('/users/delete/<username>')
+def deleteUser(username):
+    user = Usuario.query.filter(Usuario.username == username).first()
+
+    if user == None:
+        return "User not found"
+    
+    db.session.delete(user)
+    try:
+        db.session.commit()
+    except Exception as err:
+        return "Invalid user deletion"
+    return "User deleted"

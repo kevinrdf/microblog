@@ -28,3 +28,12 @@ class Estudiante(db.Model):
 
     def __repr__(self):
         return '<Estudiante {} {}>'.format(self.nombre, self.apellido)
+
+class Usuario(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(20), unique=True)
+    email = db.Column(db.String(20), unique=True)
+    password = db.Column(db.String(20))
+
+    def __repr__(self):
+        return '<Usuario {} {}>'.format(self.username, self.email)
