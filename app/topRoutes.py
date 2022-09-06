@@ -295,10 +295,10 @@ def deleteUser(username):
 def base():
     return render_template("base.html")
 
-@app.route("/login/", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
-        return "login attempt for username " + username
-    return render_template("login.html")
+# @app.route("/login/", methods=["GET", "POST"])
+# def login():
+#     if request.method == "POST":
+#         username = request.form["username"]
+#         password = request.form["password"]
+#         return "login attempt for username " + username
+#     return render_template("login.html")
