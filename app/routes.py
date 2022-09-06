@@ -1,25 +1,43 @@
-from operator import truediv
+#importamos nuestra app
 from app import app
+#para manipular fechas
 from datetime import datetime
+#para manipular regular expressions
 import re
+#importamos render_template y request para usarlos en nuestras rutas
 from flask import render_template, request
+#importamos los modelos que vamos a usar en nuestras rutas
 from app.models import User, Review, Estudiante, Usuario
+#importamos la db para mandar solicitudes
 from app import db
+#estos modulos son utiles para manejar APIs
 import requests
 import json
 
+#varias rutas pueden estar definidas por la misma funcion
 @app.route('/')
 @app.route('/index')
+#la funcion define el comportamiento del servidor al ser solicitado una ruta
 def index():
+    #creamos un diccionario
     user = {'username': 'usuario'}
+    #la funcion render_template reemplaza los parametros pasados en
+    #el archivo del primer parametro y devuelve el html correspondiente al cliente
     return render_template('index.html', title='Home', user=user, elemento1="codigo", elemento2="HTML")
+#por defecto todas las rutas usan GET pero podemos especificarlo usando el parametro
+#methods, especialmente si vamos a aceptar mas de un metodo para la misma ruta
 @app.route('/indexdinamico', methods=['GET'])
 def indexDinamico():
+    #podemos usar el modulo request de Flask para obtener parametros del URL
+    #en este caso esperamos que el usuario mande los parametros title y username
+    #e.j. localhost:5000/indexdinamico?title=titulo&username=jpazos
     args = request.args
     title = args.get("title")
     username = args.get("username")
     user = {'username': username}
     return render_template('index.html', title=title, user=user)
+#los <> definen un path parameter, cualquier valor que el usuario pase despues de
+#"/hello/" sera el input de la funcion hello_there
 @app.route("/hello/<name>")
 def hello_there(name):
     now = datetime.now()
@@ -38,12 +56,14 @@ def hello_there(name):
     return content
 @app.route("/add/user", methods=['GET'])
 def addUser():
+    #usamos el try para poder recuperarnos de algun errro
     try:
+        #esta ruta espera tres parametros
         args = request.args
         username = args.get("username")
         password = args.get("password")
         email = args.get("email")
-
+        #el usuario podria no mandar los parametros, hay que verificar que sean validos
         if (username == None):
             return "Falta parametro username"
         elif (password == None):
@@ -53,10 +73,13 @@ def addUser():
         
         if (not verifyPassword(password)):
             return "Contrasena invalida"
-        #returnString = "Username: " + username + " Password: " + password + "Email: " + email
+        #creamos un nuevo usuario de clase User 
         newUser = User(username=username, password=password, email=email)
+        #agregamos el usuario a la sesion actual de la db
         db.session.add(newUser)
+        #mandamos los cambios para que persistan en la db
         db.session.commit()
+    #en caso ocurra un error podemos recuperarnos sin romper el flujo del programa    
     except Exception as error:
         print("Invalid user", error)
         return "Invalid user"       
@@ -77,9 +100,12 @@ def add():
     return str(val1+val2)
 @app.route("/users")
 def getAllUsers():
+    #podemos pedir la informacion de varias filas de la tabla
+    #al mismo tiempo usando 'query.all()', esto devuelve una lista
     users = User.query.all()
     print(users)
     userStrings = ""
+    #podemos iterar por el resultado como cualquier lista
     for user in users:
         userStrings += user.username + " " + user.password + " " + user.email + "<br>"
     return userStrings
@@ -87,6 +113,8 @@ def getAllUsers():
 def addReview():
     args = request.args
     rating = args.get("rating")
+    #podemos realizar alguna verificacion en los datos si no queremos
+    #hacerlo en la base de datos (aunque seria mejor hacerlo alla)
     if rating > 5 or rating < 0:
         return "Ingrese un rating entre 0 y 5"
     description = args.get("description")
@@ -104,11 +132,39 @@ def getReviews():
     return reviewString
 @app.route("/reviews/<id>/")
 def getReview(id):
+    #query nos permite filtrar datos basado en ciertas condiciones
+    #aqui estamos filtrando la fila que tenga el mismo id que se paso en el URL
+    #la funcion first() coge el primer valor del resultado
     review = Review.query.filter(Review.id == id).first()
     print(review)
+    #siempre verificar si tenemos un dato valido antes de acceder a sus propiedades
     if review == None:
         return "No existe"
     return "Rating: " + str(review.rating) + "/5. Description: " + review.description
+#Esta ruta se comunica con un API externo, nationalize,
+#que retorna un objeto JSON con probabilidades que el nombre
+#dado venga de un pais especifico
+#este es un ejemplo de un request
+#https://api.nationalize.io/?name=jose
+#y un ejemplo de la respuesta
+# {
+#   "name": "jose",
+#   "country": [
+#     {
+#       "country_id": "VE",
+#       "probability": 0.05786648552663837
+#     },
+#     {
+#       "country_id": "ES",
+#       "probability": 0.05710861497406078
+#     },
+#     {
+#       "country_id": "SV",
+#       "probability": 0.05705595515479477
+#     }
+#   ]
+# }
+
 @app.route('/consolidarPaises')
 def consolidarPaises():
     estudiantes = Estudiante.query.all()
@@ -118,6 +174,7 @@ def consolidarPaises():
     # se recibe en un diccionario
     for estudiante in estudiantes:
         name = estudiante.nombre
+        #
         url = "https://api.nationalize.io/?name=" + name
         result = requests.get(url).json()
         pais = result["country"][0]["country_id"]
