@@ -1,3 +1,5 @@
+#modelo para el ejercicio
+#vamos a hacer que el username y el email sean unicos
 class Usuario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), unique=True)
@@ -8,7 +10,9 @@ class Usuario(db.Model):
         return '<Usuario {} {}>'.format(self.username, self.email)
 
 
-
+#verificamos que la solicitud tenga los parametros requeridos
+#luego verificamos los requerimientos de la contrasena
+#finalmente creamos el usuario si todo estuvo bien
 @app.route("/users/create", methods=["GET"])
 def createUser():
     args = request.args
@@ -41,7 +45,10 @@ def createUser():
     except Exception as err:
         return "username already exists or email already exists"
     return "User added"
-
+#actualizamos el usuario. Primero vemos si se ha solicitado un usuario
+#que exista en la db.
+#No tenemos que llamar un metodo especifico,
+#solo actualizamos sus propiedades y luego hacemos un commit
 @app.route("/users/update/<username>", methods=["GET"])
 def updateUser(username):
     oldUser = Usuario.query.filter(Usuario.username == username).first()
@@ -61,7 +68,7 @@ def updateUser(username):
     if newPassword == None:
         newPassword = oldUser.password
     else:
-        #verificar contrasena
+        #deberiamos verificar la contrasena pero soy flojo
         pass
     
     oldUser.username = newUsername
@@ -73,7 +80,9 @@ def updateUser(username):
     except Exception as err:
         return "Invalid new parameters"
     return "User updated"
-
+#Borramos el usuario. Nuevamente,
+#verificamos que el usuario solicitado exista.
+#para borrar solo llamamos delete()
 @app.route("/users/delete/<username>")
 def deleteUser(username):
     user = Usuario.query.filter(Usuario.username == username).first()

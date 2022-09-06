@@ -213,7 +213,7 @@ def createEstudiante():
 def verifyPassword(password):
     return len(password) >= 10
 
-
+###solucion de ejercicio en clase
 @app.route("/users/create", methods=["GET"])
 def createUser():
     args = request.args
