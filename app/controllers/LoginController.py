@@ -17,11 +17,12 @@ def login():
             user = User.query.filter(User.username == username).first()
             if user == None or password != user.password:
                 return "Invalid user or password"
+            email = user.email
             password = bytes(password, "utf-8")
             digest = hashes.Hash(hashes.SHA256())
             digest.update(password)
             hashedPassword = str(digest.finalize())
-            return redirect("/profile?username="+username+"&password="+hashedPassword)
+            return redirect("/profile?username="+username+"&password="+hashedPassword+"&email="+email)
         except Exception as err:
             print(err)
             return "Error while accesing user. Try again."
