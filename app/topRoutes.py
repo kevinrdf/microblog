@@ -13,6 +13,7 @@ from app import db
 #estos modulos son utiles para manejar APIs
 import requests
 import json
+from flask_cors import CORS, cross_origin
 
 #varias rutas pueden estar definidas por la misma funcion
 @app.route('/')
@@ -302,3 +303,23 @@ def base():
 #         password = request.form["password"]
 #         return "login attempt for username " + username
 #     return render_template("login.html")
+@app.route('/usersjson')
+@cross_origin()
+def getUsers():
+    #podemos pedir la informacion de varias filas de la tabla
+    #al mismo tiempo usando 'query.all()', esto devuelve una lista
+    users = User.query.all()
+    print(users)
+    userList = []
+    for user in users:
+        userList.append({"username":user.username, "email":user.email})
+    #podemos iterar por el resultado como cualquier lista
+    return json.dumps(userList)
+
+@app.route('/userspost', methods=["POST"])
+def getUser():
+    body = request.get_json()
+    print(body)
+    user = User.query.filter(User.username == body["username"]).first()
+
+    return json.dumps({"user": user.username, "email": user.email})
