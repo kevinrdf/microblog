@@ -1,0 +1,18 @@
+{% extends "delete_account.html" %}
+{% block content %}
+{# 
+  Este es un form que manda un request "POST"
+  Los labels son descripciones para los inputos
+  Los id's en HTML son identificadores unicos de un tag
+  Los inputs por defecto son cajas de texto para escribir
+  El type="password" esconde lo que se escriba en el input
+  El type="submit" convierte el input en un boton que manda el form
+#}
+<form method="post">
+    <label for="username">Username</label>
+    <input name="username" id="username" required>
+    <label for="password">Password</label>
+    <input type="password" name="password" id="password" required>
+    <input type="submit" value="Register">
+  </form>
+{% endblock %}

@@ -13,7 +13,7 @@ from app import db
 #estos modulos son utiles para manejar APIs
 import requests
 import json
-from flask_cors import CORS, cross_origin
+from flask_cors import CORS, cross_origin #servirá para correr el comando "flask"
 
 #varias rutas pueden estar definidas por la misma funcion
 @app.route('/')
